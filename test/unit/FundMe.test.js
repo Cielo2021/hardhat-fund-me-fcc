@@ -1,5 +1,6 @@
 const { assert, expect } = require("chai")
-const { network, deployments, ethers } = require("hardhat")
+const { deployments, ethers, getNamedAccounts } = require("hardhat")
+const { solidity } = require("ethereum-waffle")
 const { developmentChains } = require("../../helper-hardhat-config")
 
 !developmentChains.includes(network.name)
@@ -136,12 +137,11 @@ const { developmentChains } = require("../../helper-hardhat-config")
               })
               it("Only allows the owner to withdraw", async function () {
                   const accounts = await ethers.getSigners()
-                  const fundMeConnectedContract = await fundMe.connect(
-                      accounts[1]
-                  )
+                  const attacker = accounts[1]
+                  const attackerConnectedContract = await fundMe.connect(attacker)
                   await expect(
-                      fundMeConnectedContract.withdraw()
-                  ).to.be.revertedWith("FundMe__NotOwner")
+                      attackerConnectedContract.withdraw()
+                  ).to.be.revertedWith("FundMe_NotOwner")
               })
           })
       })

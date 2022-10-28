@@ -1,35 +1,37 @@
 // SPDX-License-Identifier: MIT
 // 1. Pragma
-pragma solidity ^0.8.7;
-// 2. Imports
+pragma solidity ^0.8.8;
+
+// 2. imports
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "./PriceConverter.sol";
 
 // 3. Interfaces, Libraries, Contracts
-error FundMe__NotOwner();
+error FundMe_NotOwner();
 
-/**@title A sample Funding Contract
- * @author Patrick Collins
- * @notice This contract is for creating a sample funding contract
+//NatSpec format
+/** @title A contract for crowd funding
+ * @author Patrick Collins 
+ * @notice This contract is to demo a sample funding contracts
  * @dev This implements price feeds as our library
  */
 contract FundMe {
     // Type Declarations
     using PriceConverter for uint256;
 
-    // State variables
+    // State Variables
     uint256 public constant MINIMUM_USD = 50 * 10**18;
     address private immutable i_owner;
     address[] private s_funders;
     mapping(address => uint256) private s_addressToAmountFunded;
-    AggregatorV3Interface private s_priceFeed;
-
-    // Events (we have none!)
+    AggregatorV3Interface public s_priceFeed;
+    
+    // Events (We have none!)
 
     // Modifiers
     modifier onlyOwner() {
-        // require(msg.sender == i_owner);
-        if (msg.sender != i_owner) revert FundMe__NotOwner();
+        // require(msg.sender == owner);
+        if (msg.sender != i_owner) revert FundMe_NotOwner();
         _;
     }
 
@@ -44,11 +46,15 @@ contract FundMe {
     //// view / pure
 
     constructor(address priceFeed) {
-        s_priceFeed = AggregatorV3Interface(priceFeed);
+        s_priceFeed = AggregatorV3Interface(priceFeed); 
         i_owner = msg.sender;
     }
 
-    /// @notice Funds our contract based on the ETH/USD price
+    /**
+     * @notice This function funds this cotract
+     * @dev This implements price feeds as our library
+     */
+
     function fund() public payable {
         require(
             msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
@@ -74,7 +80,6 @@ contract FundMe {
         (bool success, ) = i_owner.call{value: address(this).balance}("");
         require(success);
     }
-
     function cheaperWithdraw() public onlyOwner {
         address[] memory funders = s_funders;
         // mappings can't be in memory, sorry!
@@ -91,7 +96,6 @@ contract FundMe {
         (bool success, ) = i_owner.call{value: address(this).balance}("");
         require(success);
     }
-
     /** @notice Gets the amount that an address has funded
      *  @param fundingAddress the address of the funder
      *  @return the amount funded
@@ -120,3 +124,17 @@ contract FundMe {
         return s_priceFeed;
     }
 }
+        
+
+
+
+
+
+// Concepts we didn't cover yet (will cover in later sections)
+// 1. Enum
+// 2. Events
+// 3. Try / Catch
+// 4. Function Selector
+// 5. abi.encode / decode
+// 6. Hash with keccak256
+// 7. Yul / Assembly
